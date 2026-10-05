@@ -1,0 +1,337 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AuraSync - Symmetrical Audio & Video Visualizer</title>
+  <meta name="description" content="Symmetrical visualizer for video, audio, YouTube, and Spotify media with real-time spectrum analysis.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <!-- Ambient background glow elements -->
+  <div class="ambient-glow glow-top" id="ambientGlowTop"></div>
+  <div class="ambient-glow glow-bottom" id="ambientGlowBottom"></div>
+
+  <!-- Header Bar -->
+  <header class="app-header">
+    <div class="logo">
+      <div class="logo-icon">
+        <span></span><span></span><span></span><span></span><span></span>
+      </div>
+      <span class="logo-text">AURASYNC</span>
+      <span class="logo-badge">SYMMETRIC A/V</span>
+    </div>
+    <div class="header-actions">
+      <button id="switchSourceBtn" class="header-btn hidden" title="Change Media Source">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+          <polyline points="17 8 12 3 7 8"></polyline>
+          <line x1="12" y1="3" x2="12" y2="15"></line>
+        </svg>
+        <span>Change Source</span>
+      </button>
+    </div>
+  </header>
+
+  <!-- Main Container -->
+  <main class="main-container">
+
+    <!-- INITIAL INPUT SCREEN -->
+    <section id="inputScreen" class="input-card active">
+      <div class="input-card-glow"></div>
+      
+      <div class="input-header">
+        <h1 class="input-title">Select Media Source</h1>
+        <p class="input-subtitle">Stream from YouTube, Spotify, or upload your own video & audio files</p>
+      </div>
+
+      <!-- Tab selectors -->
+      <div class="source-tabs">
+        <button class="tab-btn active" data-tab="link-tab" id="tabLink">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"></path>
+            <path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"></path>
+          </svg>
+          YouTube / Spotify Link
+        </button>
+        <button class="tab-btn" data-tab="file-tab" id="tabFile">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+            <polyline points="17 8 12 3 7 8"></polyline>
+            <line x1="12" y1="3" x2="12" y2="15"></line>
+          </svg>
+          Upload Local File
+        </button>
+      </div>
+
+      <!-- Tab 1: Web Link Input -->
+      <div class="tab-content active" id="link-tab">
+        <form id="urlForm" class="url-form">
+          <div class="input-group">
+            <div class="input-prefix">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <circle cx="12" cy="12" r="10"></circle>
+                <line x1="2" y1="12" x2="22" y2="12"></line>
+                <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"></path>
+              </svg>
+            </div>
+            <input 
+              type="text" 
+              id="urlInput" 
+              placeholder="Paste YouTube or Spotify URL here..." 
+              autocomplete="off"
+              spellcheck="false"
+              required
+            />
+            <button type="submit" id="btnLoadUrl" class="primary-btn">
+              <span>Launch</span>
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <polygon points="5 3 19 12 5 21 5 3"></polygon>
+              </svg>
+            </button>
+          </div>
+          <div class="supported-badges">
+            <span class="badge youtube"><span class="badge-dot"></span> YouTube Videos & Shorts</span>
+            <span class="badge spotify"><span class="badge-dot"></span> Spotify Tracks & Playlists</span>
+          </div>
+        </form>
+
+        <div class="quick-examples">
+          <span class="example-label">Try instant samples:</span>
+          <div class="example-chips">
+            <button type="button" class="chip-btn" data-url="https://www.youtube.com/watch?v=jfKfPfyJRdk">
+              ▶ Lofi Hip Hop Stream
+            </button>
+            <button type="button" class="chip-btn" data-url="https://www.youtube.com/watch?v=4xDzrJKXOOY">
+              ▶ Synthwave Chill
+            </button>
+            <button type="button" class="chip-btn" data-url="https://open.spotify.com/track/4cOdK2wGLETKBW3PvgPWqT">
+              ▶ Spotify Hit
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Tab 2: File Upload Input -->
+      <div class="tab-content" id="file-tab">
+        <div class="drop-zone" id="dropZone">
+          <input type="file" id="fileInput" accept="video/*,audio/*" class="file-input-hidden" />
+          <div class="drop-zone-icon">
+            <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+              <path d="M4 14.899A7 7 0 1 1 15.71 8h1.79a4.5 4.5 0 0 1 2.5 8.242"></path>
+              <path d="M12 12v9"></path>
+              <path d="m16 16-4-4-4 4"></path>
+            </svg>
+          </div>
+          <p class="drop-zone-primary">Click or drag & drop video or audio file here</p>
+          <p class="drop-zone-secondary">Supports MP4, WebM, MOV, MKV, MP3, WAV, FLAC, OGG</p>
+          <button type="button" class="choose-file-btn" id="chooseFileBtn">Browse Files</button>
+        </div>
+        <div class="demo-synth-row">
+          <span>No files on hand?</span>
+          <button type="button" class="chip-btn" id="demoSynthBtn">⚡ Play Built-in Audio Synth Demo</button>
+        </div>
+      </div>
+    </section>
+
+
+    <!-- VISUALIZER STAGE (Symmetrical Layout Matching User Sketch) -->
+    <section id="visualizerStage" class="visualizer-stage hidden">
+
+      <!-- 1. TOP: 16:9 VIDEO / MEDIA SCREEN -->
+      <div class="stage-section video-section">
+        <div class="video-container-16-9" id="videoBoxWrapper">
+          <!-- Unified media element for local video and audio files -->
+          <video id="mediaPlayer" class="media-video" playsinline preload="auto"></video>
+
+          <!-- Audio-only Visual Screen (when an audio file is uploaded) -->
+          <div id="audioScreenCanvasContainer" class="audio-screen hidden">
+            <canvas id="audioBackdropCanvas"></canvas>
+            <div class="audio-screen-info">
+              <div class="audio-disc-animation">
+                <div class="vinyl-record">
+                  <div class="vinyl-center"></div>
+                </div>
+              </div>
+              <div class="audio-screen-meta">
+                <span class="audio-badge">HI-RES AUDIO</span>
+                <span class="audio-filename" id="audioScreenTitle">Audio Track</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- YouTube IFrame Container -->
+          <div id="ytContainer" class="embed-container hidden">
+            <div id="ytPlayerElement"></div>
+          </div>
+          <audio id="ytAudioPlayer" preload="auto" playsinline></audio>
+
+          <!-- Spotify Showcase Container -->
+          <div id="spotifyContainer" class="embed-container hidden">
+            <div id="spotifyCard" class="spotify-card-showcase">
+              <div class="spotify-art-wrapper">
+                <img id="spotifyAlbumImg" class="spotify-album-img" src="" alt="Spotify Album Art" />
+                <div class="vinyl-record spotify-vinyl" id="spotifyVinyl">
+                  <div class="vinyl-center"></div>
+                </div>
+              </div>
+              <div class="spotify-info">
+                <span class="spotify-badge-pill">SPOTIFY MASTER</span>
+                <h2 id="spotifyTrackName" class="spotify-title-text">Spotify Track</h2>
+                <p id="spotifyArtistName" class="spotify-artist-text">Artist</p>
+                <a id="spotifyExternalLink" href="#" target="_blank" rel="noopener noreferrer" class="spotify-open-btn">
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+                    <path d="M12 0C5.4 0 0 5.4 0 12s5.4 12 12 12 12-5.4 12-12S18.66 0 12 0zm5.521 17.34c-.24.359-.66.48-1.021.24-2.82-1.74-6.36-2.101-10.561-1.141-.418.122-.779-.179-.899-.539-.12-.421.18-.78.54-.9 4.56-1.021 8.52-.6 11.64 1.32.42.18.479.659.301 1.02zm1.44-3.3c-.301.42-.841.6-1.262.3-3.239-1.98-8.159-2.58-11.939-1.38-.479.12-1.02-.12-1.14-.6-.12-.48.12-1.021.6-1.141C9.6 9.9 15 10.561 18.72 12.84c.361.181.54.78.241 1.2zm.12-3.36C15.24 8.4 8.82 8.16 5.16 9.301c-.6.179-1.2-.181-1.38-.721-.18-.601.18-1.2.72-1.381 4.26-1.26 11.28-1.02 15.721 1.621.539.3.719 1.02.419 1.56-.299.421-1.02.599-1.559.3z"/>
+                  </svg>
+                  <span>Open on Spotify</span>
+                </a>
+              </div>
+            </div>
+            <iframe id="spotifyFrame" class="hidden" src="" width="0" height="0" frameBorder="0"></iframe>
+          </div>
+
+          <!-- 16:9 Badge Indicator -->
+          <div class="aspect-badge">16:9 SCREEN</div>
+        </div>
+      </div>
+
+      <!-- 2. MIDDLE: SYMMETRICAL AUDIO VISUALIZER -->
+      <div class="stage-section visualizer-section">
+        <div class="visualizer-container">
+          <div class="visualizer-header-bar">
+            <div class="visualizer-status">
+              <span class="status-dot synced" id="statusDot"></span>
+              <span class="status-label" id="statusLabel">REAL-TIME SPECTRUM // ACTIVE</span>
+            </div>
+          </div>
+          <canvas id="visualizerCanvas" width="1200" height="240"></canvas>
+        </div>
+      </div>
+
+      <!-- 3. BOTTOM: TITLE MOVING TO LEFT (LOOPING) WITH LEFT & RIGHT GRADIENT FADES -->
+      <div class="stage-section title-section">
+        <div class="marquee-fade-container">
+          <!-- Left and right fade gradients are rendered via CSS mask & overlays -->
+          <div class="fade-mask-left"></div>
+          
+          <div class="marquee-track" id="marqueeTrack">
+            <!-- Content will be duplicated dynamically for continuous seamless scroll -->
+            <div class="marquee-items" id="marqueeItems">
+              <span class="marquee-item title-text">TITLE - WAITING FOR MEDIA</span>
+              <span class="marquee-sep">•</span>
+              <span class="marquee-item subtitle-text">STEREO SPECTRUM</span>
+              <span class="marquee-sep">•</span>
+              <span class="marquee-item title-text">TITLE - WAITING FOR MEDIA</span>
+              <span class="marquee-sep">•</span>
+              <span class="marquee-item subtitle-text">STEREO SPECTRUM</span>
+              <span class="marquee-sep">•</span>
+              <span class="marquee-item title-text">TITLE - WAITING FOR MEDIA</span>
+              <span class="marquee-sep">•</span>
+              <span class="marquee-item subtitle-text">STEREO SPECTRUM</span>
+              <span class="marquee-sep">•</span>
+              <span class="marquee-item title-text">TITLE - WAITING FOR MEDIA</span>
+              <span class="marquee-sep">•</span>
+              <span class="marquee-item subtitle-text">STEREO SPECTRUM</span>
+              <span class="marquee-sep">•</span>
+            </div>
+          </div>
+
+          <div class="fade-mask-right"></div>
+        </div>
+      </div>
+
+      <!-- CONTROLS DOCK (Symmetrical Player Controls) -->
+      <div class="stage-controls">
+        <div class="controls-panel">
+          
+          <!-- Timeline row (for local audio/video) -->
+          <div class="timeline-row" id="timelineRow">
+            <span class="time-label" id="currentTimeLabel">0:00</span>
+            <div class="timeline-bar" id="timelineBar">
+              <div class="timeline-progress" id="timelineProgress"></div>
+              <div class="timeline-thumb" id="timelineThumb"></div>
+            </div>
+            <span class="time-label" id="durationLabel">0:00</span>
+          </div>
+
+          <!-- Buttons row -->
+          <div class="control-actions">
+            <!-- Visualizer mode selector -->
+            <div class="control-group">
+              <label for="visualizerMode" class="ctrl-label">STYLE</label>
+              <select id="visualizerMode" class="custom-select">
+                <option value="symmetric-bars" selected>Symmetric Soundwave</option>
+                <option value="mirrored-spectrum">Mirrored Spectrum</option>
+                <option value="dual-oscilloscope">Dual Oscilloscope</option>
+                <option value="circular-symmetric">Radial Pulse</option>
+              </select>
+            </div>
+
+            <!-- Color Palette selector -->
+            <div class="control-group" id="themeControlGroup">
+              <label for="colorTheme" class="ctrl-label">THEME</label>
+              <select id="colorTheme" class="custom-select">
+                <option value="cyber-cyan" selected>Neon Cyan</option>
+                <option value="synth-sunset">Sunset Purple</option>
+                <option value="electric-amber">Amber Gold</option>
+                <option value="matrix-emerald">Cyber Green</option>
+                <option value="crimson-flame">Crimson Red</option>
+              </select>
+            </div>
+
+            <!-- Center Play/Pause Button -->
+            <button id="playPauseBtn" class="play-btn" title="Play / Pause">
+              <svg id="playIcon" width="22" height="22" viewBox="0 0 24 24" fill="currentColor">
+                <polygon points="6 4 20 12 6 20 6 4"></polygon>
+              </svg>
+              <svg id="pauseIcon" class="hidden" width="22" height="22" viewBox="0 0 24 24" fill="currentColor">
+                <rect x="6" y="4" width="4" height="16"></rect>
+                <rect x="14" y="4" width="4" height="16"></rect>
+              </svg>
+            </button>
+
+            <!-- Volume Control -->
+            <div class="control-group volume-group">
+              <button id="muteBtn" class="icon-btn" title="Mute / Unmute">
+                <svg id="volumeIcon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"></polygon>
+                  <path d="M19.07 4.93a10 10 0 0 1 0 14.14M15.54 8.46a5 5 0 0 1 0 7.07"></path>
+                </svg>
+                <svg id="muteIcon" class="hidden" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <line x1="1" y1="1" x2="23" y2="23"></line>
+                  <path d="M9 9v3a3 3 0 0 0 5.12 2.12M15 9.34V4a3 3 0 0 0-5.94-.6"></path>
+                  <path d="M17 16.95A7 7 0 0 1 5 12v-2m14 0v2a7 7 0 0 1-.11 1.23"></path>
+                  <line x1="12" y1="19" x2="12" y2="23"></line>
+                  <line x1="8" y1="23" x2="16" y2="23"></line>
+                </svg>
+              </button>
+              <input type="range" id="volumeSlider" min="0" max="1" step="0.01" value="0.8" class="volume-slider">
+            </div>
+
+            <!-- Fullscreen Toggle -->
+            <button id="fullscreenBtn" class="icon-btn" title="Toggle Fullscreen">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M8 3H5a2 2 0 0 0-2 2v3m18 0V5a2 2 0 0 0-2-2h-3m0 18h3a2 2 0 0 0 2-2v-3M3 16v3a2 2 0 0 0 2 2h3"></path>
+              </svg>
+            </button>
+          </div>
+
+        </div>
+      </div>
+
+    </section>
+
+  </main>
+
+  <!-- Global Toast Notification -->
+  <div id="toastNotification" class="toast-notification hidden"></div>
+
+  <!-- YouTube Iframe API -->
+  <script src="https://www.youtube.com/iframe_api"></script>
+  <!-- Application Logic -->
+  <script src="app.js"></script>
+</body>
+</html>
