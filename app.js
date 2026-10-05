@@ -553,6 +553,15 @@ function setupEventListeners() {
         } catch (e) {}
       }
     });
+
+    ytAudioPlayer.addEventListener('error', () => {
+      if (statusLabel) {
+        statusLabel.textContent = 'NOTICE: YOUTUBE STREAMING REQUIRES LOCAL ENGINE (./serve.ps1) — USE LOCAL AUDIO UPLOAD OR SYNTH DEMO!';
+      }
+      if (statusDot) {
+        statusDot.className = 'status-dot';
+      }
+    });
   }
 }
 
